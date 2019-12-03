@@ -12,14 +12,13 @@
 #include <stdio.h>
 #include <string.h>
 
-
 /*
   Function Declarations for builtin shell commands:
  */
 int cd_command(char **args);
 
 /*
-  List of builtin commands, followed by their corresponding functions.
+  List of builtin commands, followed by the corresponding function.
  */
 char *builtin_str[] = {
   "cd"
@@ -85,7 +84,6 @@ int launch(char **args)
   return 1;
 }
 
-
 /**
    @brief Execute shell built-in or launch program.
    @param args Null terminated list of arguments.
@@ -93,7 +91,7 @@ int launch(char **args)
  */
 int execute(char **args)
 {
-  int i;
+  int i = 0;
 
   if (args[0] == NULL) {
     // An empty command was entered.
@@ -104,8 +102,6 @@ int execute(char **args)
     }
   return launch(args);
 }
-
-
 
 #define RL_BUFSIZE 255
 /**
@@ -149,7 +145,33 @@ char *read_line(void)
   }
 }
 
+#define RL_BUFSIZE 255
+char *read_command(void)
+{
+  int bufsize = RL_BUFSIZE;
+  int position = 0;
+  char *buffer = malloc(sizeof(char) * bufsize);
+  int c;
 
+  if (!buffer) {
+    fprintf(stderr, "uthsh: allocation error\n");
+    exit(EXIT_FAILURE);
+  }
+
+  while (1) {
+    // Read a character
+    c = getchar();
+
+	// If character is space then return
+    if (c == '\n' || c == 32) {
+      buffer[position] = '\0';
+      return buffer;
+    } else {
+      buffer[position] = c;
+    }
+    position++;
+  }
+}
 
 #define TOK_BUFSIZE 64
 #define TOK_DELIM " \t\r\n\a"
@@ -171,6 +193,7 @@ char **split_line(char *line)
 
   token = strtok(line, TOK_DELIM);
   while (token != NULL) {
+    
     tokens[position] = token;
     position++;
 
@@ -182,13 +205,11 @@ char **split_line(char *line)
         exit(EXIT_FAILURE);
       }
     }
-
     token = strtok(NULL, TOK_DELIM);
   }
   tokens[position] = NULL;
   return tokens;
 }
-
 
 /**
    @brief Loop getting input and executing it.
@@ -200,7 +221,17 @@ void loop(void)
   int status;
 
   do {
-    printf("uthsh> ");
+    printf("uthsh1> ");
+    line = read_command();
+    args = split_line(line);
+    status = execute(args);
+
+    free(line);
+    free(args);
+  } while (status!= EOF);
+
+  do {
+    printf("uthsh2> ");
     line = read_line();
     args = split_line(line);
     status = execute(args);
@@ -208,8 +239,29 @@ void loop(void)
     free(line);
     free(args);
   } while (status!= EOF);
-}
 
+
+  do {
+    printf("uthsh3> ");
+    line = read_line();
+    args = split_line(line);
+    status = execute(args);
+
+    free(line);
+    free(args);
+  } while (status!= EOF);
+  
+  do {
+    printf("uthsh4> ");
+    line = read_line();
+    args = split_line(line);
+    status = execute(args);
+
+    free(line);
+    free(args);
+  } while (status!= EOF);
+  
+}
 
 /**
    @brief Main entry point.
