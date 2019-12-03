@@ -12,6 +12,45 @@
 #include <stdio.h>
 #include <string.h>
 
+
+/*
+  Function Declarations for builtin shell commands:
+ */
+int cd_command(char **args);
+
+/*
+  List of builtin commands, followed by their corresponding functions.
+ */
+char *builtin_str[] = {
+  "cd"
+};
+
+int (*builtin_func[]) (char **) = {
+  &cd_command
+};
+
+int num_builtins() {
+  return sizeof(builtin_str) / sizeof(char *);
+}
+
+/**
+   @brief Bultin command: change directory.
+   @param args List of args.  args[0] is "cd".  args[1] is the directory.
+   @return Always returns 1, to continue executing.
+ */
+int cd_command(char **args)
+{
+  if (args[1] == NULL) {
+    fprintf(stderr, "uth: expected argument to \"cd\"\n");
+  } else {
+    if (chdir(args[1]) != 0) {
+      perror("uth");
+    }
+  }
+  return 1;
+}
+
+
 /**
   @brief Launch a program and wait for it to terminate.
   @param args Null terminated list of arguments (including program).
@@ -60,7 +99,9 @@ int execute(char **args)
     // An empty command was entered.
     printf("\n");
     return EOF;
-  }
+  }else if(strcmp(args[0], builtin_str[i]) == 0) {
+      return (*builtin_func[i])(args);
+    }
   return launch(args);
 }
 
