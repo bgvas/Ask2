@@ -1,9 +1,6 @@
 /***************************************************************************//**
-
   @file     Ask2.c
-
-  @authors  Basilis Georgoulas A.M : & Ioannis Skoumpas A.M : 2118063
-
+  @authors  Basilis Georgoulas A.M 2118147 : & Ioannis Skoumpas A.M : 2118063
 *******************************************************************************/
 
 #include <sys/wait.h>
@@ -12,14 +9,13 @@
 #include <stdio.h>
 #include <string.h>
 
-/*
-  Function Declarations for builtin shell commands:
- */
+
+
+//  Decleration for cd build-in command
 int cd_command(char **args);
 
-/*
-  List of builtin commands, followed by the corresponding function.
- */
+
+//  List of builtin commands, followed by their corresponding functions.
 char *builtin_str[] = {
   "cd"
 };
@@ -32,11 +28,9 @@ int num_builtins() {
   return sizeof(builtin_str) / sizeof(char *);
 }
 
-/**
-   @brief Bultin command: change directory.
-   @param args List of args.  args[0] is "cd".  args[1] is the directory.
-   @return Always returns 1, to continue executing.
- */
+
+//Bultin command: change directory.
+
 int cd_command(char **args)
 {
   if (args[1] == NULL) {
@@ -57,22 +51,16 @@ int cd_command(char **args)
  */
 int launch(char **args)
 {
-  pid_t pid, wpid;
+  pid_t pid, wpid; // proccess-ID type variables(int)
   int status;
 
   pid = fork();
-  if (pid == 0) {
-    // Child process
-    /*When execvp() is executed, the program file given by the first argument will be loaded into the
-    caller's address space and over-write the program there. Then, the second argument will be provided to the
-    program and starts the execution. As a result, once the specified program file starts its execution, 
-    the original program in the caller's address space is gone and is replaced by the new program. */
+  if (pid == 0) { // If creation of Child process, succeed 
     if (execvp(args[0], args) == -1) {
       perror("uthsh");
     }
     exit(EXIT_FAILURE);
-  } else if (pid < 0) {
-    // Error forking
+  } else if (pid < 0) { // if creation of child process , failed
     perror("uthsh");
   } else {
     // Parent process
@@ -84,17 +72,17 @@ int launch(char **args)
   return 1;
 }
 
+
 /**
-   @brief Execute shell built-in or launch program.
-   @param args Null terminated list of arguments.
-   @return 1 if the shell should continue running, 0 if it should terminate
+   -Execute shell built-in or launch program.
+   -args Null terminated list of arguments.
+   -1 if the shell should continue running, 0 if it should terminate
  */
 int execute(char **args)
 {
   int i = 0;
 
-  if (args[0] == NULL) {
-    // An empty command was entered.
+  if (args[0] == NULL) { // An empty command was entered.
     printf("\n");
     return EOF;
   }else if(strcmp(args[0], builtin_str[i]) == 0) {
@@ -103,13 +91,11 @@ int execute(char **args)
   return launch(args);
 }
 
+
 #define RL_BUFSIZE 255
-/**
-   @brief Read a line of input from stdin.
-   @return The line from stdin.
- */
-char *read_line(void)
-{
+
+// Read a line of input from stdin.
+char *read_line(void){
   int bufsize = RL_BUFSIZE;
   int position = 0;
   char *buffer = malloc(sizeof(char) * bufsize);
@@ -119,11 +105,10 @@ char *read_line(void)
     fprintf(stderr, "uthsh: allocation error\n");
     exit(EXIT_FAILURE);
   }
-
   while (1) {
-    // Read a character
-    c = getchar();
-
+    
+    c = getchar();  // Read a character
+ 
     // If we hit EOF, replace it with a null character and return.
     if (c == EOF || c == '\n') {
       buffer[position] = '\0';
@@ -145,7 +130,10 @@ char *read_line(void)
   }
 }
 
+
 #define RL_BUFSIZE 255
+
+// read a command without arguments
 char *read_command(void)
 {
   int bufsize = RL_BUFSIZE;
@@ -159,8 +147,8 @@ char *read_command(void)
   }
 
   while (1) {
-    // Read a character
-    c = getchar();
+    
+    c = getchar(); // Read a character
 
 	// If character is space then return
     if (c == '\n' || c == 32) {
@@ -173,12 +161,13 @@ char *read_command(void)
   }
 }
 
+
+
 #define TOK_BUFSIZE 64
 #define TOK_DELIM " \t\r\n\a"
 /**
-   @brief Split a line into tokens (very naively).
-   @param line The line.
-   @return Null-terminated array of tokens.
+   -Split a line into tokens (very naively).
+   -Null-terminated array of tokens.
  */
 char **split_line(char *line)
 {
@@ -193,7 +182,6 @@ char **split_line(char *line)
 
   token = strtok(line, TOK_DELIM);
   while (token != NULL) {
-    
     tokens[position] = token;
     position++;
 
@@ -205,15 +193,16 @@ char **split_line(char *line)
         exit(EXIT_FAILURE);
       }
     }
+
     token = strtok(NULL, TOK_DELIM);
   }
   tokens[position] = NULL;
   return tokens;
 }
 
-/**
-   @brief Loop getting input and executing it.
- */
+
+
+// Loop getting input and executing it.
 void loop(void)
 {
   char *line;
@@ -228,9 +217,9 @@ void loop(void)
 
     free(line);
     free(args);
-  } while (status!= EOF);
+  } while (status != EOF);
 
-  do {
+do {
     printf("uthsh2> ");
     line = read_line();
     args = split_line(line);
@@ -238,45 +227,14 @@ void loop(void)
 
     free(line);
     free(args);
-  } while (status!= EOF);
-
-
-  do {
-    printf("uthsh3> ");
-    line = read_line();
-    args = split_line(line);
-    status = execute(args);
-
-    free(line);
-    free(args);
-  } while (status!= EOF);
-  
-  do {
-    printf("uthsh4> ");
-    line = read_line();
-    args = split_line(line);
-    status = execute(args);
-
-    free(line);
-    free(args);
-  } while (status!= EOF);
-  
+  } while (status != EOF);
 }
 
-/**
-   @brief Main entry point.
-   @param argc Argument count.
-   @param argv Argument vector.
-   @return status code
- */
+
+// The Main Function
 int main(int argc, char **argv)
 {
-  // Load config files, if any.
-
-  // Run command loop.
   loop();
-
-  // Perform any shutdown/cleanup.
-
   return EXIT_SUCCESS;
 }
+
