@@ -9,11 +9,8 @@
 #include <stdio.h>
 #include <string.h>
 
-
-
 //  Decleration for cd build-in command
 int cd_command(char **args);
-
 
 //  List of builtin commands, followed by their corresponding functions.
 char *builtin_str[] = {
@@ -28,9 +25,7 @@ int num_builtins() {
   return sizeof(builtin_str) / sizeof(char *);
 }
 
-
-//Bultin command: change directory.
-
+//Built-in command: change directory.
 int cd_command(char **args)
 {
   if (args[1] == NULL) {
@@ -42,7 +37,6 @@ int cd_command(char **args)
   }
   return 1;
 }
-
 
 /**
   @brief Launch a program and wait for it to terminate.
@@ -57,21 +51,19 @@ int launch(char **args)
   pid = fork();
   if (pid == 0) { // If creation of Child process, succeed 
     if (execvp(args[0], args) == -1) {
-      perror("uthsh");
+      perror("uthsh1");
     }
     exit(EXIT_FAILURE);
   } else if (pid < 0) { // if creation of child process , failed
-    perror("uthsh");
+    perror("uthsh1");
   } else {
     // Parent process
     do { //WUNTRACED return if a child has stopped
       wpid = waitpid(pid, &status, WUNTRACED); //Suspends the calling process until a child process ends or is stopped
     } while (!WIFEXITED(status) && !WIFSIGNALED(status)); //determines whether the child and the parent process ended normally.
   }
-
   return 1;
 }
-
 
 /**
    -Execute shell built-in or launch program.
@@ -93,9 +85,8 @@ int execute(char **args)
 
 
 #define RL_BUFSIZE 255
-
-// Read a line of input from stdin.
-char *read_line(void){
+char *read_line(void) // Read a line of input from stdin.
+{
   int bufsize = RL_BUFSIZE;
   int position = 0;
   char *buffer = malloc(sizeof(char) * bufsize);
@@ -118,7 +109,7 @@ char *read_line(void){
     }
     position++;
 
-    // If we have exceeded the buffer, reallocate.
+    // If we have exceeded the buffer, reallocate more space.
     if (position >= bufsize) {
       bufsize += RL_BUFSIZE;
       buffer = realloc(buffer, bufsize);
@@ -130,11 +121,8 @@ char *read_line(void){
   }
 }
 
-
 #define RL_BUFSIZE 255
-
-// read a command without arguments
-char *read_command(void)
+char *read_command(void) // Reads a command without arguments
 {
   int bufsize = RL_BUFSIZE;
   int position = 0;
@@ -150,7 +138,7 @@ char *read_command(void)
     
     c = getchar(); // Read a character
 
-	// If character is space then return
+	// If character is space " ", then return.
     if (c == '\n' || c == 32) {
       buffer[position] = '\0';
       return buffer;
@@ -176,7 +164,7 @@ char **split_line(char *line)
   char *token = malloc(bufsize * sizeof(char));
 
   if (!tokens) {
-    fprintf(stderr, "uthsh: allocation error\n");
+    fprintf(stderr, "uthsh1: allocation error\n");
     exit(EXIT_FAILURE);
   }
 
@@ -189,7 +177,7 @@ char **split_line(char *line)
       bufsize += TOK_BUFSIZE;
       tokens = realloc(tokens, bufsize * sizeof(char*));
       if (!tokens) {
-        fprintf(stderr, "uthsh: allocation error\n");
+        fprintf(stderr, "uthsh1: allocation error\n");
         exit(EXIT_FAILURE);
       }
     }
@@ -200,10 +188,7 @@ char **split_line(char *line)
   return tokens;
 }
 
-
-
-// Loop getting input and executing it.
-void loop(void)
+void loop(void) // Loop of the shells.
 {
   char *line;
   char **args;
@@ -228,8 +213,27 @@ do {
     free(line);
     free(args);
   } while (status != EOF);
-}
 
+  do {
+    printf("uthsh3> ");
+    line = read_line();
+    args = split_line(line);
+    status = execute(args);
+
+    free(line);
+    free(args);
+  } while (status != EOF);
+
+  do {
+    printf("uthsh4> ");
+    line = read_line();
+    args = split_line(line);
+    status = execute(args);
+
+    free(line);
+    free(args);
+  } while (status != EOF);
+}
 
 // The Main Function
 int main(int argc, char **argv)
@@ -237,4 +241,3 @@ int main(int argc, char **argv)
   loop();
   return EXIT_SUCCESS;
 }
-
